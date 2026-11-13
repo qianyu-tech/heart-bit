@@ -1,0 +1,6 @@
+# WorkBuddy 内部数据：工作日志、应用发布记录与发布标记，不入库
+.workbuddy/
+.wbapp_*.genie
+
+# macOS
+.DS_Store

@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#FFF7F4">
+<title>测一测，TA 是不是也在偷偷喜欢你</title>
+<style>
+  :root{
+    --pink:#FF6B8A;
+    --pink-deep:#F0436C;
+    --peach:#FFB08A;
+    --purple:#C6A8F0;
+    --ink:#3B2B33;
+    --ink-soft:#6B5460;
+    --muted:#A9949E;
+    --line:#F4E5EA;
+    --card:#FFFFFF;
+    --bg:#FFF7F4;
+    --shadow:0 12px 40px rgba(240,67,108,.10);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(700px 500px at 12% -8%, #FFE1E9 0%, rgba(255,225,233,0) 70%),
+      radial-gradient(620px 520px at 100% 100%, #F0E4FF 0%, rgba(240,228,255,0) 72%),
+      linear-gradient(160deg,#FFF9F6 0%,#FFF3F6 55%,#FBF4FF 100%);
+    min-height:100vh;
+    display:flex;justify-content:center;align-items:flex-start;
+    overflow-x:hidden;
+  }
+  .app{
+    position:relative;width:100%;max-width:430px;min-height:100vh;
+    background:rgba(255,255,255,.62);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  }
+  @media(min-width:520px){
+    body{padding:28px 0;align-items:flex-start}
+    .app{border-radius:34px;min-height:calc(100vh - 56px);box-shadow:0 24px 70px rgba(214,116,150,.18);border:1px solid rgba(255,255,255,.9);overflow:hidden}
+  }
+  .blob{position:absolute;border-radius:50%;filter:blur(42px);pointer-events:none;z-index:0}
+  .blob.a{width:180px;height:180px;background:#FFD3E0;top:-70px;right:-60px;opacity:.7}
+  .blob.b{width:150px;height:150px;background:#E5D6FF;bottom:40px;left:-80px;opacity:.55}
+  .screen{position:relative;z-index:1;display:none;padding:38px 26px 44px;animation:fadeUp .42s ease both}
+  .screen.active{display:block}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @keyframes floaty{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-9px) rotate(2deg)}}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+
+  /* ---------- 首页 ---------- */
+  .deco{display:flex;align-items:center;gap:8px;margin-bottom:26px}
+  .deco .heart{font-size:22px;animation:floaty 3.2s ease-in-out infinite;display:inline-block}
+  .deco .dash{height:1px;flex:1;background:linear-gradient(90deg,#FFC9D8,rgba(255,201,216,0))}
+  .deco .dot{width:6px;height:6px;border-radius:50%;background:#FFC0D1}
+  h1{
+    font-size:33px;line-height:1.34;letter-spacing:-.5px;margin:0 0 14px;font-weight:800;
+  }
+  h1 em{font-style:normal;background:linear-gradient(120deg,var(--pink-deep),#FF8FA8);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{font-size:15px;color:var(--ink-soft);margin:0 0 30px;line-height:1.7}
+  .sell{display:flex;flex-direction:column;gap:10px;margin-bottom:32px}
+  .sell-item{
+    display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.9);
+    border:1px solid var(--line);border-radius:16px;padding:14px 15px;
+    box-shadow:0 4px 16px rgba(240,67,108,.05);
+  }
+  .sell-item .tick{font-size:17px;line-height:1;flex:none}
+  .sell-item .txt{font-size:14px;line-height:1.5;color:var(--ink)}
+  .sell-item .txt b{font-weight:700;color:var(--pink-deep)}
+  .sell-item .txt span{color:var(--muted);padding:0 6px}
+  .btn{
+    display:block;width:100%;border:0;cursor:pointer;font-family:inherit;
+    background:linear-gradient(135deg,#FF87A5 0%,#FF5D8A 55%,#F84C79 100%);
+    color:#fff;font-size:17px;font-weight:700;letter-spacing:1px;
+    padding:17px 20px;border-radius:999px;
+    box-shadow:0 10px 26px rgba(240,67,108,.30);
+    transition:transform .18s ease,box-shadow .18s ease;
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(240,67,108,.38)}
+  .btn:active{transform:translateY(1px) scale(.99)}
+  .foot{margin:22px 0 0;text-align:center;font-size:12px;color:var(--muted);line-height:1.6}
+
+  /* ---------- 答题页 ---------- */
+  .quiz-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .back{
+    border:0;background:rgba(255,255,255,.85);color:var(--ink-soft);
+    font-family:inherit;font-size:13px;padding:8px 13px;border-radius:999px;cursor:pointer;
+    border:1px solid var(--line);transition:opacity .2s;
+  }
+  .back:disabled{opacity:.35;cursor:default}
+  .count{font-size:13px;color:var(--muted);letter-spacing:.5px}
+  .count b{color:var(--pink-deep);font-size:16px;font-weight:800}
+  .bar{height:7px;border-radius:99px;background:#F7E9EE;overflow:hidden;margin-bottom:34px}
+  .bar > i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#FFB08A,#FF6B8A,#C6A8F0);transition:width .4s cubic-bezier(.2,.8,.2,1)}
+  .q-index{font-size:12px;font-weight:700;color:var(--purple);letter-spacing:2px;margin-bottom:12px}
+  .q-title{font-size:22px;font-weight:800;line-height:1.55;margin:0 0 8px;letter-spacing:-.2px}
+  .q-hint{font-size:12px;color:var(--muted);margin:0 0 26px}
+  .opts{display:flex;flex-direction:column;gap:12px}
+  .opt{
+    display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;
+    background:rgba(255,255,255,.94);border:1.5px solid var(--line);border-radius:18px;
+    padding:16px 16px;font-family:inherit;font-size:15px;line-height:1.6;color:var(--ink);
+    cursor:pointer;box-shadow:0 4px 14px rgba(240,67,108,.04);
+    transition:border-color .2s,background .2s,transform .16s,box-shadow .2s;
+  }
+  .opt:hover{border-color:#FFB3C6;transform:translateY(-2px);box-shadow:0 8px 20px rgba(240,67,108,.10)}
+  .opt .letter{
+    flex:none;width:26px;height:26px;border-radius:9px;background:#FFF0F4;color:var(--pink-deep);
+    font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px;
+    transition:background .2s,color .2s;
+  }
+  .opt.picked{border-color:var(--pink);background:linear-gradient(120deg,#FFF1F5,#FFF7FB);box-shadow:0 8px 22px rgba(240,67,108,.14)}
+  .opt.picked .letter{background:var(--pink);color:#fff}
+  .opt.dim{opacity:.42}
+  .quiz-foot{margin-top:26px;text-align:center;font-size:12px;color:var(--muted)}
+
+  /* ---------- 结果页 ---------- */
+  .result{text-align:left}
+  .res-head{text-align:center;margin-bottom:26px}
+  .res-icon{
+    width:96px;height:96px;margin:0 auto 16px;border-radius:32px;
+    background:linear-gradient(140deg,#FFF0F5,#F4EAFF);
+    display:flex;align-items:center;justify-content:center;font-size:46px;
+    box-shadow:0 12px 30px rgba(240,67,108,.13);animation:floaty 3.6s ease-in-out infinite;
+  }
+  .res-kicker{font-size:12px;letter-spacing:3px;color:var(--purple);font-weight:700;margin-bottom:10px}
+  .res-name{font-size:29px;font-weight:800;line-height:1.3;margin:0 0 10px;background:linear-gradient(120deg,var(--pink-deep),#FF8FA8);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .res-tagline{font-size:16px;color:var(--ink-soft);margin:0;font-weight:600}
+  .card{
+    background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:20px;
+    padding:20px;margin-bottom:14px;box-shadow:var(--shadow);
+  }
+  .card h3{font-size:13px;letter-spacing:1px;color:var(--muted);font-weight:700;margin:0 0 14px}
+  .level-row{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+  .level-row .big{font-size:34px;font-weight:800;color:var(--pink-deep);letter-spacing:-1px}
+  .level-row .big small{font-size:16px;margin-left:2px}
+  .level-row .lab{font-size:12px;color:var(--muted)}
+  .level-bar{height:10px;border-radius:99px;background:#F9EDF1;overflow:hidden}
+  .level-bar > i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#FFC08A,#FF6B8A,#C6A8F0);width:0;transition:width 1s cubic-bezier(.2,.8,.2,1)}
+  .level-note{font-size:12px;color:var(--muted);margin:10px 0 0;line-height:1.6}
+  .desc p{font-size:14.5px;line-height:1.9;color:var(--ink-soft);margin:0 0 12px}
+  .desc p:last-child{margin-bottom:0}
+  .os{
+    font-size:15px;line-height:1.8;color:var(--ink);font-weight:600;
+    padding:14px 16px;background:linear-gradient(120deg,#FFF3F7,#F7F0FF);
+    border-left:3px solid var(--pink);border-radius:0 14px 14px 0;margin:0;
+  }
+  .note{background:linear-gradient(140deg,#FFFBF3,#FFF4F6);border:1px solid #FBE8DA}
+  .note p{font-size:14px;line-height:1.85;color:var(--ink-soft);margin:0}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+  .chip{font-size:12px;padding:7px 13px;border-radius:999px;background:#FFF0F5;color:var(--pink-deep);border:1px solid #FFDDE7;font-weight:600}
+  .btn-row{display:flex;flex-direction:column;gap:10px}
+  .btn.ghost{
+    background:#fff;color:var(--pink-deep);border:1.5px solid #FFD3E0;
+    box-shadow:none;font-size:15px;padding:14px;
+  }
+  .btn.ghost:hover{background:#FFF5F8;box-shadow:none}
+  details.atlas{margin-top:22px;border-top:1px solid var(--line);padding-top:16px}
+  details.atlas summary{font-size:13px;color:var(--ink-soft);cursor:pointer;list-style:none;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+  details.atlas summary::-webkit-details-marker{display:none}
+  details.atlas summary::after{content:"＋";font-size:16px;color:var(--pink)}
+  details.atlas[open] summary::after{content:"－"}
+  .atlas-list{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+  .atlas-row{display:flex;gap:10px;align-items:baseline;font-size:12.5px;line-height:1.5;padding:9px 11px;background:rgba(255,255,255,.8);border-radius:12px;border:1px solid var(--line)}
+  .atlas-row i{font-style:normal;color:var(--purple);font-weight:700;flex:none}
+  .atlas-row b{color:var(--ink);font-weight:700;flex:none}
+  .atlas-row span{color:var(--muted)}
+  .atlas-row.me{border-color:#FFC0D1;background:#FFF3F7}
+  .toast{
+    position:fixed;left:50%;bottom:38px;transform:translate(-50%,20px);
+    background:rgba(59,43,51,.92);color:#fff;font-size:13px;padding:11px 20px;border-radius:999px;
+    opacity:0;pointer-events:none;transition:all .28s ease;z-index:99;white-space:nowrap;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="blob a"></div><div class="blob b"></div>
+
+  <!-- 首页 -->
+  <section id="home" class="screen active">
+    <div class="deco"><span class="heart">💗</span><span class="dash"></span><span class="dot"></span></div>
+    <h1>测一测，TA 是不是<em>也在偷偷喜欢你</em></h1>
+    <p class="sub">凭你的心动细节，匹配 TA 的真实心意</p>
+    <div class="sell">
+      <div class="sell-item"><span class="tick">✅</span><span class="txt"><b>心动细节</b><span>｜</span>每个举动都有答案</span></div>
+      <div class="sell-item"><span class="tick">✅</span><span class="txt"><b>聊天温度</b><span>｜</span>回复速度藏着态度</span></div>
+      <div class="sell-item"><span class="tick">✅</span><span class="txt"><b>暧昧浓度</b><span>｜</span>你们现在到哪一步</span></div>
+      <div class="sell-item"><span class="tick">✅</span><span class="txt"><b>心意解读</b><span>｜</span>TA 心里到底怎么看你</span></div>
+    </div>
+    <button class="btn" id="startBtn">点击测试 →</button>
+    <p class="foot">趣味测试仅供娱乐，别拿结果去质问他</p>
+  </section>
+
+  <!-- 答题页 -->
+  <section id="quiz" class="screen">
+    <div class="quiz-top">
+      <button class="back" id="backBtn">← 上一题</button>
+      <span class="count"><b id="curNum">01</b> / 32</span>
+    </div>
+    <div class="bar"><i id="progress"></i></div>
+    <div class="q-index" id="qIndex">QUESTION 01</div>
+    <h2 class="q-title" id="qTitle"></h2>
+    <p class="q-hint">凭第一直觉选，别想太久 🍮</p>
+    <div class="opts" id="opts"></div>
+    <p class="quiz-foot">选完自动跳下一题 · 32 道单选题</p>
+  </section>
+
+  <!-- 结果页 -->
+  <section id="result" class="screen result">
+    <div class="res-head">
+      <div class="res-icon" id="resIcon">💗</div>
+      <div class="res-kicker">你的心动匹配结果</div>
+      <h2 class="res-name" id="resName"></h2>
+      <p class="res-tagline" id="resTagline"></p>
+    </div>
+
+    <div class="card">
+      <h3>心动浓度</h3>
+      <div class="level-row"><span class="big" id="resLevel">0<small>%</small></span><span class="lab" id="resPersona"></span></div>
+      <div class="level-bar"><i id="levelBar"></i></div>
+      <p class="level-note" id="resLevelNote"></p>
+    </div>
+
+    <div class="card desc" id="resDesc"></div>
+
+    <div class="card">
+      <h3>TA 的内心 OS</h3>
+      <p class="os" id="resOS"></p>
+    </div>
+
+    <div class="card note">
+      <h3>布丁的小纸条 🍮</h3>
+      <p id="resTip"></p>
+    </div>
+
+    <div class="chips" id="resChips"></div>
+
+    <div class="btn-row">
+      <button class="btn" id="copyBtn">复制结果文案 →</button>
+      <button class="btn ghost" id="againBtn">再测一次</button>
+    </div>
+
+    <details class="atlas">
+      <summary>10 种心意图鉴 · 看看你抽到了哪一款</summary>
+      <div class="atlas-list" id="atlasList"></div>
+    </details>
+
+    <p class="foot">趣味测试仅供娱乐，别拿结果去质问他</p>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ 结果池：10 个心动结果类型 ============ */
+const RESULTS = {
+  mutual:{ n:"双向奔赴型", tag:"你俩就差一个人先开口", icon:"💞", level:96, persona:"两个装睡的人",
+    desc:["TA 的心意基本属于「藏不住但还在硬藏」级别：消息回得比谁都快，话题接得比谁都稳，连你随手发的一句废话都能被 TA 扩写成一段连续剧。","你们之间没有任何悬疑，唯一没解决的技术问题是——谁先把那句话说出口。目前双方都在优雅地装忙，比分 0:0，观众已经急了。"],
+    os:"「我都表现得这么明显了，TA 怎么还没发现……要不我再发一条？」",
+    tip:"不用急着验证，也不用推谁先开口。继续把相处维持在这个舒服的温度，答案自己会浮上来 🍮",
+    chips:["秒回选手","话题永动机","只差一句话","观众已急"],
+    note:"浓度高到已经溢出来了，剩下那 4% 留给两个人的勇气。" },
+  secret:{ n:"偷偷暗恋型", tag:"TA 也喜欢你，只是不敢说", icon:"🫣", level:88, persona:"打字删除冠军",
+    desc:["TA 的喜欢走的是「地下工作者」路线：输入、全选、删除、再输入，最后发出去一个「嗯」。但你仔细看，那些「顺便」「刚好」「路过」出现得也太频繁了点。","TA 不是没信号，是把信号调成了静音模式。音量很低，可从没关过。"],
+    os:"「这条会不会太明显了……算了，发个表情包吧。」",
+    tip:"别急着拆穿，也别反复试探。给 TA 一点安全的空间，慢一点的人往往想得更认真。",
+    chips:["嘴上随便","行为很努力","静音模式","暗戳戳守护"],
+    note:"心意是满格的，只是被 TA 自己按了静音键。" },
+  above:{ n:"友达以上型", tag:"再靠近一点就变味了", icon:"🍑", level:82, persona:"友谊边界试探员",
+    desc:["你们现在卡在一个非常微妙的位置：比朋友多一点点默契，比恋人少一句正式台词。聊天能聊到半夜，但谁都没把「我们」这个词摆到台面上。","这种状态像一杯刚好没搅匀的奶茶，甜已经沉在下面了，只差有人轻轻搅一下。"],
+    os:"「这样相处挺好的……但好像，还可以再好一点？」",
+    tip:"不用急着给关系命名。多创造几次自然的、不带压力的相处，边界会自己往前挪一点。",
+    chips:["默契超标","称呼还没升级","临界点选手","甜在杯底"],
+    note:"离「变味」只差半步，而且是那种很好闻的味。" },
+  slow:{ n:"慢热观望型", tag:"有感觉，但还在观察你", icon:"🌱", level:63, persona:"谨慎的观察员",
+    desc:["TA 不是没感觉，是感觉被 TA 放进了「待审核」文件夹。回复不慢，但很少抢先；会记住你说过的话，却不会立刻表现出记住了。","这类人把心动当成一件需要确认的事，节奏慢，但一旦确认，稳定性高得离谱。"],
+    os:"「再看看，不急。我想确认这不是一时兴起。」",
+    tip:"别用密集输出去催进度。稳定、自然、可预期，就是最有效的加分项。",
+    chips:["待审核中","节奏稳定","不抢先但不缺席","慢就是稳"],
+    note:"进度条在涨，只是一天涨一格，从不跳级。" },
+  calm:{ n:"故作镇定型", tag:"嘴上说没有，身体很诚实", icon:"😌", level:79, persona:"嘴硬界年度冠军",
+    desc:["TA 的嘴和行动基本属于两个部门，且互不沟通。嘴上「就顺手」「随便啦」，行动上却把你的偏好记比谁都清楚，你一出现，TA 的状态肉眼可见地亮了一档。","这种人不是不想承认，是承认这件事对 TA 来说太隆重了，只好先用「淡定」糊过去。"],
+    os:"「我没有特别在意啊。……那家店你上次说想吃来着？」",
+    tip:"看行动就好，别追着要口头认证。被逼到墙角的淡定，会装得更用力 😌",
+    chips:["嘴硬","行动派","顺手专业户","耳朵很诚实"],
+    note:"口供和证据对不上，建议以证据为准。" },
+  friend:{ n:"纯友谊型", tag:"TA 真的只把你当朋友", icon:"🍻", level:24, persona:"坦荡的饭搭子",
+    desc:["TA 对你的友善是真的，稳定、真诚、不含额外剧情。约饭爽快，聊天轻松，但那份「特别」目前确实没在你这里多停留。","这其实是个挺舒服的结果：一段不拧巴、不用猜的关系，本身就很难得。"],
+    os:"「跟 TA 待着挺自在的，走，吃饭。」",
+    tip:"不必给每段舒服的关系都找一个暧昧解释。轻松自在地相处，本身就是很好的答案。",
+    chips:["坦荡","不拧巴","饭搭子天花板","零额外剧情"],
+    note:"不是所有心动细节都指向心动，有的只是人品好。" },
+  tease:{ n:"暧昧拉扯型", tag:"享受这个过程，就是不表态", icon:"🌀", level:71, persona:"氛围组组长",
+    desc:["TA 非常擅长把气氛调到刚刚好：话只说七分，剩下三分留给你猜；靠近一步又退半步，节奏拿捏得像在打一场友好的乒乓球。","好玩是真好玩，但这份「不表态」也是真的。TA 享受的是过程本身，未必急着要一个结论。"],
+    os:"「这样挺有意思的，先别急着定义嘛～」",
+    tip:"允许自己享受氛围，也允许自己想要清晰。如果哪天你更想要答案，坦率说出来一点都不过分。",
+    chips:["七分话术","退半步专家","氛围感拉满","结论待定"],
+    note:"浓度不低，但一直在原地转圈，转得还挺好看。" },
+  polite:{ n:"礼貌友好型", tag:"TA 对谁都这样，别多想", icon:"🌤️", level:31, persona:"全员温和派",
+    desc:["TA 的秒回、点赞、顺手帮忙，很可能是标配而非限定款。温和是 TA 的默认设置，对你如此，对别人也差不多。","这个结果不是坏消息，只是帮你把「特殊性」这一栏先清空，省得脑内小剧场连演三季。"],
+    os:"「收到，我回一下～」（对所有人同款）",
+    tip:"把注意力放回自己的感受就好。不用从每一个标点里找证据，也挺解放的。",
+    chips:["标配温和","人均同款","不搞特殊","脑内剧终"],
+    note:"不是冷淡，是把温柔均匀地分给了所有人。" },
+  miss:{ n:"信号错位型", tag:"你的心动，TA 根本没接收到", icon:"📡", level:18, persona:"频道不同的两个人",
+    desc:["你这边已经把细节反复回放了三遍，TA 那边还在正常频道里岁月静好。不是 TA 装傻，是你发的信号和 TA 的接收频段暂时没对上。","有点像对着一台没连上的蓝牙音箱深情演唱，唱得挺好，就是没出声。"],
+    os:"「嗯？刚刚那条消息有什么特别含义吗？」",
+    tip:"不用加大音量，也别反复重发。把想说的说得清楚一点、轻一点，比暗示更省力。",
+    chips:["频道未对齐","暗示已读未懂","蓝牙未连接","岁月静好中"],
+    note:"信号不是没有，是还在找对的频段。" },
+  timing:{ n:"时机未到型", tag:"有戏，但眼下不是时候", icon:"⏳", level:57, persona:"排队中的可能性",
+    desc:["你们之间的氛围并不是零，只是被现实里的忙碌、节奏、状态暂时按了暂停。TA 有回应，也有温度，只是眼下没有多余的心力往前挪。","这更像是「时间没排上号」，不是「不想排」。放着不难看，硬催反而容易变味。"],
+    os:"「现在有点顾不上……但我不想把话说死。」",
+    tip:"把节奏交给时间，别为了赶进度给自己加戏。等各自都松快一点，再看也不迟。",
+    chips:["暂停键","排队中","有温度没余力","不催更好"],
+    note:"可能性还在，只是排在了日程表的后面一页。" }
+};
+
+/* ============ 32 道单选题：每题 4 个选项，每选项绑定一个结果计分标签 ============ */
+/* A/B/C/D 依次对应「热烈 / 含蓄 / 慢热拉扯 / 平淡」四种语气，tag 按池轮换，10 个结果均衡覆盖 */
+const TAGS = [
+  ["mutual","calm","slow","polite"],   ["above","secret","timing","friend"],
+  ["mutual","calm","tease","miss"],    ["above","secret","slow","polite"],
+  ["mutual","calm","timing","friend"], ["above","secret","tease","miss"],
+  ["mutual","calm","slow","polite"],   ["above","secret","timing","friend"],
+  ["mutual","calm","tease","miss"],    ["above","secret","slow","polite"],
+  ["mutual","calm","timing","friend"], ["above","secret","tease","miss"],
+  ["mutual","calm","slow","polite"],   ["above","secret","timing","friend"],
+  ["mutual","calm","tease","miss"],    ["above","secret","slow","polite"],
+  ["mutual","calm","timing","friend"], ["above","secret","tease","miss"],
+  ["mutual","calm","slow","polite"],   ["above","secret","timing","friend"],
+  ["mutual","calm","tease","miss"],    ["above","secret","slow","polite"],
+  ["mutual","calm","timing","friend"], ["above","secret","tease","miss"],
+  ["mutual","calm","slow","polite"],   ["above","secret","timing","friend"],
+  ["mutual","calm","tease","miss"],    ["above","secret","slow","polite"],
+  ["mutual","calm","timing","friend"], ["above","secret","tease","miss"],
+  ["mutual","calm","slow","polite"],   ["above","secret","timing","friend"]
+];
+
+const QUESTIONS = [
+  { q:"TA 凌晨两点回你消息，你会怎么想", o:[
+    "这个点还没睡，是不是也在等我","TA 肯定编辑了半小时才敢发","先别急，看看明天还聊不聊","夜猫子罢了，跟我没有关系"]},
+  { q:"你们聊天记录里，谁更常先结尾", o:[
+    "谁都不肯先说晚安，能聊到天亮","TA 每次都多补一句，把话头接回来","看心情，有时候隔一天才续上","基本是我收尾，TA 一个表情包就消失"]},
+  { q:"TA 发朋友圈，你大概多久点赞", o:[
+    "秒赞，手比脑子快","假装路过，过十分钟再点","先看完配文，挑个有梗的时机","刷到了就随手点，跟别人一样"]},
+  { q:"TA 约你吃饭，理由通常是哪种", o:[
+    "「就突然想见你」，理由都不找了","「这家店多了一个人份」，借口很努力","攒了三个理由，最后只发了句「有空吗」","「部门聚餐顺带叫你」，名单很长"]},
+  { q:"如果 TA 是一只猫，此刻最可能在干嘛", o:[
+    "直接跳你腿上踩奶，理直气壮","躲沙发后面偷看，被发现了就假装舔毛","在离你一米的地方坐下，观察你要不要伸手","谁抱都行，猫粮才是真爱"]},
+  { q:"节日祝福，TA 发来的是哪一种", o:[
+    "单独写了一段，还提到只有你俩懂的事","群发模板里，悄悄多改了最后一句","卡在零点发了个表情，没配文字","群发，连称呼都没改"]},
+  { q:"你们的表情包生态，最接近哪种", o:[
+    "已经共用一套专属黑话，外人看不懂","TA 存了你发的表情包，但装作随手","你来我往很有礼貌，斗图从不越界","全靠系统默认微笑"]},
+  { q:"一起等电梯时，TA 通常", o:[
+    "自然站到你旁边，聊到电梯来了还嫌快","站得有点远，但一直在研究你的手机壳","先刷会儿手机，等门开了才开口","各等各的，顺路而已"]},
+  { q:"奶茶第二杯半价，TA 的反应", o:[
+    "「那正好，两杯都归我们」","「……要不要顺便帮你带一杯」，其实早点好了","「下次吧」，而且下次真的会来","「我自己喝一杯就够啦」"]},
+  { q:"你在朋友面前被提起时，TA 的嘴", o:[
+    "三句话就能绕回你，朋友都听出来了","从不主动提，但别人一提就接话","提过，用词非常谨慎","「哦，认识啊」，然后换话题"]},
+  { q:"你发了一条很普通的朋友圈，TA", o:[
+    "评论区里最认真，还追问细节","没评论，但过会儿私聊把这事又聊了一遍","点了赞，隔了半天才点","划过去了，跟划别人一样"]},
+  { q:"把你们的聊天记录拍成剧，剧名是", o:[
+    "《两个人都没打算收工》","《打字删除打字删除》","《更新不定，追更随缘》","《已读，全剧终》"]},
+  { q:"你换了新头像，TA", o:[
+    "五分钟内就来问「这在哪拍的」","什么都没说，但第二天头像风格微妙地呼应了","过几天才提一句「换啦」","没注意到，也没必要注意"]},
+  { q:"下雨天，伞的常见走向", o:[
+    "一把伞两个人，谁都没提要不要","TA 把伞往你那边斜，嘴上说「我本来就淋习惯了」","「你带伞了吗」问完，雨也快停了","各自有伞，各自回家"]},
+  { q:"TA 记住过最离谱的细节是", o:[
+    "你随口提过一次、连你自己都忘了的东西","你说过不吃香菜，之后桌上再没出现过","大概记得你口味，偶尔会记反","记性全用在工作群里了"]},
+  { q:"你发「在吗」，TA 的回复节奏", o:[
+    "秒回，还附赠三个后续话题","隔两分钟回「在」，其实屏幕一直亮着","忙完才回，但会认真解释刚才在干嘛","第二天回了个「？」"]},
+  { q:"你们之间的「下次一定」，兑现率", o:[
+    "下次就在下周，甚至地点都定好了","说得很轻，但 TA 偷偷记进了备忘录","慢慢来，反正不急，也不催","「下次」是一个传说中的时间单位"]},
+  { q:"TA 给你发语音还是打字", o:[
+    "语音连着发，背景音里还有笑","打了一长段又撤回，最后只发两个字","规规矩矩打字，标点都很齐全","能用一个「好」解决的，绝不发第二个字"]},
+  { q:"一起走路时，TA 的位置", o:[
+    "一直跟你并排，人多了也会绕回来","半步之后，你慢下来 TA 也慢下来","保持一个刚好不尴尬的距离","各走各的，到路口才想起来道别"]},
+  { q:"假如 TA 的心意是一份外卖，备注会写", o:[
+    "「两份，送到你门口，别问为什么」","「不要打电话，放门口就好」，害羞到不敢露面","「先放着，凉了再热也行」","备注：无"]},
+  { q:"你在群里说了个冷笑话，TA", o:[
+    "全场只有 TA 接梗，还帮你把梗接长了","没在群里笑，私聊发来一串「哈哈哈哈哈」","隔了一会儿发了个礼貌的 😂","群里安静得像什么都没发生"]},
+  { q:"TA 提到未来计划时，主语是", o:[
+    "「我们」，用得特别自然","「可能……到时候再说」，眼神却飘向你","「我」，偶尔加一句「看情况」","「我」，句号，没有后半句"]},
+  { q:"你突然两天没找 TA，TA", o:[
+    "主动来问，还带了个不太像借口的借口","什么都没发，第三天憋出一句「最近忙？」","等你回来，不追问也不催","完全没发现这两天有什么不同"]},
+  { q:"你们的默契程度，用一句话形容", o:[
+    "同时发同一句话，然后一起笑","TA 总能接住你没说出口的后半句，还死不承认","有时对得上，有时各说各的","默契主要体现在「都很有礼貌」"]},
+  { q:"TA 叫你的方式，风格是", o:[
+    "一个只有 TA 会叫的名字","全名，但犹豫很久才敢改成一个字","规规矩矩，跟通讯录其他人一个格式","没改过，系统默认"]},
+  { q:"约饭被你临时放鸽子，TA", o:[
+    "「没事，那我们改明天？」一分钟都不浪费","「好～」，隔天又小心翼翼提了一次那家店","「没关系，下次提前说就好」，很体面","「好」，然后愉快地自己吃完了"]},
+  { q:"TA 分享给你的歌或视频，通常", o:[
+    "附一句「这个必须给你看」，理由都不给","什么都没写，但内容巧合得有点刻意","偶尔转一个，跟转给别人差不多","主要是工作通知和养生科普"]},
+  { q:"如果你们的心意有个进度条，它现在", o:[
+    "99%，卡在谁先开口那 1%","早就满了，只是被 TA 藏起来了","慢慢涨，一天涨一格","大概还没开始加载"]},
+  { q:"你夸 TA 一句，TA 的反应", o:[
+    "当场把夸奖原封不动还回来，还加码","嘴上「哪有」，耳朵红得很诚实","「谢谢」两个字，稳得像在面试","回一个统一表情包，跟回复客户一样"]},
+  { q:"深夜聊到最投机的那一刻，TA", o:[
+    "「别睡，再聊一会儿」，说得毫无掩饰","打了「晚安」又删掉，最后发了个月亮","看了看时间，说「明天还得早起呢」","准时下线，作息非常健康"]},
+  { q:"把 TA 的在意程度想成一种天气", o:[
+    "大晴天，阳光直接糊你脸上","闷热，但天气预报死不肯说要下雨","多云转晴，得再等两天","晴，跟每一天都一样，普适性晴"]},
+  { q:"最后一题：如果现在发一句「想你了」，你心里的预判", o:[
+    "屏幕那头会立刻回一句「我也是」","TA 会心跳漏一拍，然后装作淡定回个表情","会认真回，但要等 TA 把勇气攒够","会得到一个礼貌又不失体面的「哈哈」"]}
+];
+
+/* ============ 逻辑 ============ */
+/* 固定种子打乱每题选项展示顺序，绑定关系不变，规律不易被看穿 */
+function seededShuffle(arr, seed){
+  const a = arr.slice(); let s = seed >>> 0;
+  const rnd = () => { s = (Math.imul(s,1664525) + 1013904223) >>> 0; return s / 4294967296; };
+  for (let i = a.length-1; i > 0; i--){ const j = Math.floor(rnd()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; }
+  return a;
+}
+const DECK = QUESTIONS.map((item,i) => {
+  const pair = item.o.map((text,j) => ({ text, tag:TAGS[i][j] }));
+  return { q:item.q, opts:seededShuffle(pair, i*7919 + 137) };
+});
+
+const KEYS = Object.keys(RESULTS);
+let current = 0;
+let answers = new Array(DECK.length).fill(null); // 存 tag
+let scores = {}, lastPicked = {};
+KEYS.forEach(k => { scores[k] = 0; lastPicked[k] = -1; });
+let locked = false;
+
+const $ = id => document.getElementById(id);
+const screens = { home:$("home"), quiz:$("quiz"), result:$("result") };
+function show(name){
+  Object.values(screens).forEach(s => s.classList.remove("active"));
+  screens[name].classList.add("active");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function toast(msg){
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(t._timer); t._timer = setTimeout(() => t.classList.remove("show"), 1900);
+}
+
+function renderQuestion(){
+  const item = DECK[current];
+  $("curNum").textContent = String(current+1).padStart(2,"0");
+  $("qIndex").textContent = "QUESTION " + String(current+1).padStart(2,"0");
+  $("qTitle").textContent = item.q;
+  $("progress").style.width = ((current+1)/DECK.length*100) + "%";
+  $("backBtn").disabled = current === 0;
+  const box = $("opts"); box.innerHTML = "";
+  const letters = ["A","B","C","D"];
+  item.opts.forEach((opt,idx) => {
+    const b = document.createElement("button");
+    b.className = "opt" + (answers[current] === opt.tag ? " picked" : "");
+    b.innerHTML = '<span class="letter">'+letters[idx]+'</span><span></span>';
+    b.lastElementChild.textContent = opt.text;
+    b.addEventListener("click", () => pick(opt.tag, b));
+    box.appendChild(b);
+  });
+  locked = false;
+}
+
+function pick(tag, btn){
+  if (locked) return;
+  locked = true;
+  const prev = answers[current];
+  if (prev){ scores[prev] = Math.max(0, scores[prev]-1); recomputeLast(); }
+  answers[current] = tag;
+  scores[tag]++; lastPicked[tag] = current;
+  [...$("opts").children].forEach(el => { el.classList.add("dim"); el.classList.remove("picked"); });
+  btn.classList.remove("dim"); btn.classList.add("picked");
+  setTimeout(() => {
+    if (current < DECK.length-1){ current++; renderQuestion(); }
+    else showResult();
+  }, 360);
+}
+function recomputeLast(){
+  KEYS.forEach(k => {
+    lastPicked[k] = -1;
+    for (let i = answers.length-1; i >= 0; i--) if (answers[i] === k){ lastPicked[k] = i; break; }
+  });
+}
+function goBack(){
+  if (current === 0) return;
+  current--; renderQuestion();
+}
+
+function showResult(){
+  recomputeLast(); // 平局时以「最后一次选中该题签的位置」决胜，返回改选后也准确
+  let best = KEYS[0];
+  KEYS.forEach(k => {
+    if (scores[k] > scores[best] || (scores[k] === scores[best] && lastPicked[k] > lastPicked[best])) best = k;
+  });
+  const r = RESULTS[best];
+  $("resIcon").textContent = r.icon;
+  $("resName").textContent = r.n;
+  $("resTagline").textContent = "—— " + r.tag;
+  $("resLevel").innerHTML = r.level + "<small>%</small>";
+  $("resPersona").textContent = "人设 · " + r.persona;
+  $("resLevelNote").textContent = r.note;
+  $("resDesc").innerHTML = r.desc.map(p => "<p>"+p+"</p>").join("");
+  $("resOS").textContent = r.os;
+  $("resTip").textContent = r.tip;
+  $("resChips").innerHTML = r.chips.map(c => '<span class="chip">'+c+"</span>").join("");
+  $("atlasList").innerHTML = KEYS.map((k,i) =>
+    '<div class="atlas-row'+(k===best?" me":"")+'"><i>'+String(i+1).padStart(2,"0")+'</i><b>'+RESULTS[k].n+'</b><span>—— '+RESULTS[k].tag+"</span></div>"
+  ).join("");
+  show("result");
+  $("levelBar").style.width = "0%";
+  setTimeout(() => { $("levelBar").style.width = r.level + "%"; }, 120);
+  $("copyBtn").dataset.key = best;
+}
+
+function copyResult(){
+  const k = $("copyBtn").dataset.key || "mutual";
+  const r = RESULTS[k];
+  const text = "测一测，TA 是不是也在偷偷喜欢你 💗\n"
+    + "我的结果：【"+r.n+"】—— "+r.tag+"\n"
+    + "心动浓度 "+r.level+"% ｜ 人设："+r.persona+"\n"
+    + "TA 的内心 OS：" + r.os + "\n"
+    + r.tip + "\n"
+    + "凭你的心动细节，匹配 TA 的真实心意，来测测你的 →\n"
+    + "（趣味测试仅供娱乐，别拿结果去质问他）";
+  const done = () => toast("文案已复制，去发笔记吧 🍮");
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+  } else fallbackCopy(text, done);
+}
+function fallbackCopy(text, done){
+  const ta = document.createElement("textarea");
+  ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); done(); } catch(e){ toast("复制失败，长按页面手动选择吧"); }
+  document.body.removeChild(ta);
+}
+function restart(){
+  current = 0; answers.fill(null);
+  KEYS.forEach(k => { scores[k] = 0; lastPicked[k] = -1; });
+  $("levelBar").style.width = "0%";
+  renderQuestion(); show("quiz");
+}
+
+$("startBtn").addEventListener("click", () => { renderQuestion(); show("quiz"); });
+$("backBtn").addEventListener("click", goBack);
+$("copyBtn").addEventListener("click", copyResult);
+$("againBtn").addEventListener("click", restart);
+</script>
+</body>
+</html>
